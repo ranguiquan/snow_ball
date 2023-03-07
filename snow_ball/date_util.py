@@ -105,3 +105,11 @@ class DateUtil:
             self.get_date_from_t(time)
             - self.date_sheet.loc[self.option_time_collection.start_time, "date"]
         ).days
+
+    def is_time_t_up_out_monitoring(self, t: float):
+        t = math.ceil(t)
+        return self.date_sheet.loc[t, "is_UO_monitoring"]
+
+    def is_time_t_down_in_monitoring(self, t: float):
+        t = math.ceil(t)
+        return self.date_sheet.loc[t, "is_DI_monitoring"]

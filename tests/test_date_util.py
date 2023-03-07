@@ -24,3 +24,20 @@ def test_get_Tout_from_t(set_date_util: DateUtil):
     assert set_date_util.get_tout_from_t(239.9) == 357
     assert set_date_util.get_tout_from_t(240) == 357
     assert set_date_util.get_tout_from_t(240.5) == 363
+
+
+def test_is_time_t_up_out_monitoring(set_date_util: DateUtil):
+    assert set_date_util.is_time_t_up_out_monitoring(0) == False
+    assert set_date_util.is_time_t_up_out_monitoring(20.5) == True
+    assert set_date_util.is_time_t_up_out_monitoring(21) == True
+    assert set_date_util.is_time_t_up_out_monitoring(21.5) == False
+    assert set_date_util.is_time_t_up_out_monitoring(21.5) == False
+    assert set_date_util.is_time_t_up_out_monitoring(240) == True
+
+
+def test_is_time_t_down_in_monitoring(set_date_util: DateUtil):
+    assert set_date_util.is_time_t_down_in_monitoring(0) == False
+    assert set_date_util.is_time_t_down_in_monitoring(0.5) == True
+    assert set_date_util.is_time_t_down_in_monitoring(1) == True
+    assert set_date_util.is_time_t_down_in_monitoring(240) == True
+    assert set_date_util.is_time_t_down_in_monitoring(240.5) == False
