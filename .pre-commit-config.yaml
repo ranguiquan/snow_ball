@@ -26,6 +26,7 @@ repos:
         types:
             - python
         verbose: true
+        exclude: tests/
         args:
             - --exit-zero
             - --fail-on=F,E
