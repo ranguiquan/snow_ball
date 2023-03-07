@@ -93,3 +93,51 @@ class OptionAfterDownIn:
         if t == self.expiry:
             return self.payoff(S, S0)
         return continuation
+
+
+class OptionBarrier:
+    def __init__(
+        self,
+        R: float,
+        date_util: DateUtil,
+        up_barrier: float,
+        down_barrier: float,
+        up_option: OptionAfterUpOut,
+        down_option: OptionAfterDownIn,
+    ) -> None:
+        self.date_util = date_util
+        self.R = R
+        self.up_barrier = up_barrier
+        self.down_barrier = down_barrier
+        self.up_option = up_option
+        self.down_option = down_option
+
+        self.expiry = self.date_util.option_time_collection.end_time
+
+    def payoff(self):
+        """option pay off at expiry
+
+        Returns:
+            _type_: _description_
+        """
+        natural_days = (
+            self.date_util.option_date_collection.end_date
+            - self.date_util.option_date_collection.start_date
+        ).days
+        return 1 + self.R * natural_days / 365
+
+    def value_at_node(
+        self,
+        t: float,
+        S: float,
+        rf_daily: float,
+        down_in_value_at_node: float,
+        continuation: float = None,
+    ):
+        if S >= self.up_barrier and self.date_util.is_time_t_up_out_monitoring(t):
+            return self.up_option.value_at_node(t, rf_daily)
+        if S < self.down_barrier and self.date_util.is_time_t_down_in_monitoring(t):
+            return down_in_value_at_node
+        if t == self.expiry:
+            return self.payoff()
+        return continuation

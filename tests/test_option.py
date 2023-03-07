@@ -1,10 +1,11 @@
 import pytest
 
-from snow_ball.option import OptionAfterDownIn, OptionAfterUpOut
+from snow_ball.option import OptionAfterDownIn, OptionAfterUpOut, OptionBarrier
 from .test_fixures import (
     set_date_util,
     set_option_after_down_in,
     set_option_after_up_out,
+    set_option_barrier,
 )
 
 
@@ -72,3 +73,17 @@ class TestOptionAfterDownIn:
         assert set_option_after_down_in.value_at_node(240, 0.5, 1) == 0.5
         with pytest.raises(ValueError):
             set_option_after_down_in.value_at_node(241, 1, 1)
+
+
+class TestOptionBarrier:
+    # need to add more test cases
+    rf_daily = 0.035 / 365
+
+    def test_option_barrier_payoff(self, set_option_barrier: OptionBarrier):
+        assert set_option_barrier.payoff() == 1 + 0.28 * 357 / 365
+
+    def test_option_barrier_value_at_node(self, set_option_barrier: OptionBarrier):
+        assert (
+            set_option_barrier.value_at_node(240, 5.1, self.rf_daily, 1)
+            == 1 + 0.28 * 357 / 365
+        )
