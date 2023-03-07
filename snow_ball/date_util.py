@@ -1,34 +1,48 @@
+"""
+Date related classed
+"""
+from dataclasses import dataclass
 import datetime
 import math
 import pandas as pd
 
 
+@dataclass
+class OptionDateCollection:
+    """date information of option."""
+
+    valuation_date: datetime.datetime
+    start_date: datetime.datetime
+    end_date: datetime.datetime
+    after_end_date: datetime.datetime
+
+
+@dataclass
+class OptionTimeCollection:
+    """time information of option."""
+
+    valuation_time: int
+    start_time: int
+    end_time: int
+    after_end_time: int
+
+
 class DateUtil:
     """date utils for pricing UO_DI_Barrier_Option"""
 
-    def __init__(
-        self,
-        valuation_date: datetime.datetime,
-        start_date: datetime.datetime,
-        end_date: datetime.datetime,
-        after_end_date: datetime.datetime,
-    ) -> None:
+    def __init__(self, option_date_collection: OptionDateCollection) -> None:
         """set up date information
 
         Args:
-            valuation_date (datetime.datetime): valuation date.
-            start_date (datetime.datetime): transaction start date.
-            end_date (datetime.datetime): transaction end date.
-            after_end_date (datetime.datetime): next trading date after ends.
+            option_date_collection (OptionDateCollection): date information of option.
         """
-        self.valuation_date = valuation_date
-        self.start_date = start_date
-        self.end_date = end_date
-        self.after_end_date = after_end_date
+        self.option_date_collection = option_date_collection
         date_sheet = (
             pd.read_csv("./data/Project2 business_day.csv", index_col=0)
             .astype("datetime64[ns]")
-            .query("date >= @valuation_date and date <= @after_end_date")
+            .query(
+                "date >= @option_date_collection.valuation_date and date <= @option_date_collection.after_end_date"
+            )
             .reset_index(drop=True)
         )
         down_in_monitoring_day = date_sheet.loc[1 : len(date_sheet) - 2, :]
@@ -42,16 +56,19 @@ class DateUtil:
             down_in_monitoring_day["date"]
         )
         self.date_sheet = date_sheet
-        self.t_valuation = 0
-        self.t_start = 1
-        self.t_end = date_sheet.index.max() - 1
-        self.t_after_end = date_sheet.index.max()
+        self.option_time_collection = OptionTimeCollection(
+            0, 1, date_sheet.index.max() - 1, date_sheet.index.max()
+        )
 
-    def get_date_from_t(self, t: float) -> datetime.datetime:
+    def get_date_from_t(self, time: float) -> datetime.datetime:
         """get the actual date from the numerical time space
 
         Args:
-            t (float): numerical time.
+            time (float): numerical time.
+
+            1 means the end of the day 1.
+
+            1.5 means in the middle of the day 2. (trading date)
 
         Raises:
             ValueError: t must satisfy the trading range.
@@ -59,22 +76,32 @@ class DateUtil:
         Returns:
             datetime.datetime: the actual date at t.
         """
-        if t < self.t_valuation or t > self.t_after_end:
+        if (
+            time < self.option_time_collection.valuation_time
+            or time > self.option_time_collection.after_end_time
+        ):
             raise ValueError(
-                f"[t] must be between {self.t_valuation} and no bigger than {self.t_after_end}: {t}"
+                f"[t] must be between {self.option_time_collection.valuation_time}"
+                f"and no bigger than {self.option_time_collection.after_end_time}: "
+                f"{time}"
             )
-        t = math.ceil(t)
-        return self.date_sheet.loc[t, "date"]
+        time = math.ceil(time)
+        return self.date_sheet.loc[time, "date"]
 
-    def get_tout_from_t(self, t: float) -> int:
+    def get_tout_from_t(self, time: float) -> int:
         """get the date gap between option start date and t time.
 
         Args:
-            t (float): numerical time.
+            time (float): numerical time.
+
+            1 means the end of the day 1.
+
+            1.5 means in the middle of the day 2. (trading date)
 
         Returns:
             int: the date gap
         """
         return (
-            self.get_date_from_t(t) - self.date_sheet.loc[self.t_start, "date"]
+            self.get_date_from_t(time)
+            - self.date_sheet.loc[self.option_time_collection.start_time, "date"]
         ).days

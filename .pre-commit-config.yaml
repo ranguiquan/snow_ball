@@ -6,11 +6,32 @@ repos:
     -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: check-added-large-files
--   repo: https://github.com/psf/black
-    rev: stable
+-   repo: local
     hooks:
     -   id: black
--   repo: https://github.com/PyCQA/pylint
-    rev: v2.16.3
+        name: black
+        entry: black
+        language: system
+        types:
+            - python
+        args:
+            - --safe
+            - --quiet
+-   repo: local
     hooks:
     -   id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types:
+            - python
+        exclude: tests/
+        always_run: true
+-   repo: local
+    hooks:
+    -   id: pytest
+        name: pytest
+        entry: pytest
+        pass_filenames: false
+        always_run: true
+        language: system

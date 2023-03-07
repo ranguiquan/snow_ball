@@ -1,14 +1,14 @@
 import datetime
 import pytest
 
-from snow_ball import DateUtil
+from snow_ball.date_util import DateUtil, OptionDateCollection
 
 
 T0 = datetime.datetime(2019, 1, 3)
 T_start = datetime.datetime(2019, 1, 4)
 T_right = datetime.datetime(2020, 1, 2)
 Tn = datetime.datetime(2019, 12, 27)
-date_util = DateUtil(T0, T_start, Tn, T_right)
+date_util = DateUtil(OptionDateCollection(T0, T_start, Tn, T_right))
 
 
 def test_get_date_from_t():
