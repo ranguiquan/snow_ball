@@ -2,7 +2,7 @@ import datetime
 import pytest
 
 from snow_ball.date_util import DateUtil, OptionDateCollection
-from snow_ball.option import OptionAfterUpOut
+from snow_ball.option import OptionAfterDownIn, OptionAfterUpOut
 
 
 @pytest.fixture
@@ -19,3 +19,9 @@ def set_date_util():
 def set_option_after_up_out(set_date_util):
     """default OptionAfterUpOut Object"""
     return OptionAfterUpOut(0.28, set_date_util)
+
+
+@pytest.fixture
+def set_option_after_down_in(set_date_util):
+    """default OptionAfterDownIn"""
+    return OptionAfterDownIn(set_date_util)
