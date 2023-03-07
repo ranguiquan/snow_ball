@@ -2,4 +2,3 @@
 2. $\sigma$ 要怎么定，暂定预留函数接口。
 3. $\Delta$ hedging, how to examine the effect of the hedging strategy.
 4. 如果用 MC，怎么做 $\Delta$ hedging.
-
