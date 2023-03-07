@@ -106,10 +106,26 @@ class DateUtil:
             - self.date_sheet.loc[self.option_time_collection.start_time, "date"]
         ).days
 
-    def is_time_t_up_out_monitoring(self, t: float):
+    def is_time_t_up_out_monitoring(self, t: float) -> bool:
+        """is time t under up and out monitoring
+
+        Args:
+            t (float): time t (trading calendar scenario)
+
+        Returns:
+            bool:
+        """
         t = math.ceil(t)
-        return self.date_sheet.loc[t, "is_UO_monitoring"]
+        return bool(self.date_sheet.loc[t, "is_UO_monitoring"])
 
     def is_time_t_down_in_monitoring(self, t: float):
+        """is time t under down and in monitoring
+
+        Args:
+            t (float): time t (trading calendar scenario)
+
+        Returns:
+            _type_:
+        """
         t = math.ceil(t)
-        return self.date_sheet.loc[t, "is_DI_monitoring"]
+        return bool(self.date_sheet.loc[t, "is_DI_monitoring"])
