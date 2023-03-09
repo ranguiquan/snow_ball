@@ -3,6 +3,7 @@ import pytest
 
 from snow_ball.date_util import DateUtil, OptionDateCollection
 from snow_ball.option.option_up_out_auto_call import OptionUpOutAutoCall
+from snow_ball.option.option_up_out_down_out import OptionUpOutDownOut
 
 S0 = 5.1
 up_barrier = S0 * 1.05
@@ -21,5 +22,11 @@ def set_date_util():
 
 @pytest.fixture
 def set_option_up_out_auto_call(set_date_util):
-    """default OptionAfterUpOut Object"""
+    """default OptionUpOutAutoCall Object"""
     return OptionUpOutAutoCall(0.28, set_date_util, 0.035, 1.05, 3)
+
+
+@pytest.fixture
+def set_option_up_out_down_out(set_date_util):
+    """default OptionUpOutDownOut Object"""
+    return OptionUpOutDownOut(0.28, set_date_util, 0.035, 1.05, 0.68, 3)

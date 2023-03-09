@@ -45,13 +45,11 @@ class OptionUpOutAutoCall:
 
         Args:
             t (float): time (trading calendar scenario)
-            rf_daily (float): risk free rate (daily, natural calendar scenario)
 
         Returns:
             _type_: option value at time t
         """
-        today_time = t
-        date_today = self.date_util.get_date_from_t(today_time)
+        date_today = self.date_util.get_date_from_t(t)
         knock_out_time = -1
         while t <= self.date_util.option_time_collection.end_time:
             if self.date_util.is_time_t_up_out_monitoring(t):
