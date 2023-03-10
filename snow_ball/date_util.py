@@ -59,6 +59,12 @@ class DateUtil:
         self.option_time_collection = OptionTimeCollection(
             0, 1, date_sheet.index.max() - 1, date_sheet.index.max()
         )
+        self.up_out_monitoring_time_set = set(
+            date_sheet[date_sheet["is_UO_monitoring"] == True].index.unique()
+        )
+        self.down_in_monitoring_time_set = set(
+            date_sheet[date_sheet["is_DI_monitoring"] == True].index.unique()
+        )
 
     def get_date_from_t(self, time: float) -> datetime.datetime:
         """get the actual date from the numerical time space
@@ -116,7 +122,7 @@ class DateUtil:
             bool:
         """
         t = math.ceil(t)
-        return bool(self.date_sheet.loc[t, "is_UO_monitoring"])
+        return t in self.up_out_monitoring_time_set
 
     def is_time_t_down_in_monitoring(self, t: float):
         """is time t under down and in monitoring
@@ -128,4 +134,4 @@ class DateUtil:
             _type_:
         """
         t = math.ceil(t)
-        return bool(self.date_sheet.loc[t, "is_DI_monitoring"])
+        return t in self.down_in_monitoring_time_set

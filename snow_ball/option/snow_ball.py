@@ -9,6 +9,7 @@ class OptionSnowBall:
     def __init__(
         self, R: float, up_barrier: float, down_barrier: float, date_util: DateUtil
     ):
+        self.date_util = date_util
         self.up_out_auto_call = OptionUpOutAutoCall(R, date_util, up_barrier)
         self.up_out_down_out_minimal = OptionUpOutDownOutMinimal(
             R, date_util, up_barrier, down_barrier
