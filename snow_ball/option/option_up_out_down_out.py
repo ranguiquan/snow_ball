@@ -1,7 +1,8 @@
 from snow_ball.date_util import DateUtil
+from snow_ball.option.option import Option
 
 
-class OptionUpOutDownOut:
+class OptionUpOutDownOut(Option):
     def __init__(
         self,
         R: float,
@@ -40,7 +41,9 @@ class OptionUpOutDownOut:
         # out and pay 0
         return 0
 
-    def continuation_value(self, t: float, S: float, Smax: float, rf: float) -> float:
+    def continuation_value(
+        self, t: float, S: float, S0: float, Smax: float, rf: float
+    ) -> float:
         date_util = self.date_util
         rf_daily = rf / 365
         pay = 1 + self.R * 357 / 365

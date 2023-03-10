@@ -1,9 +1,10 @@
 """Option related class edited
 """
 from snow_ball.date_util import DateUtil
+from snow_ball.option.option import Option
 
 
-class OptionUpOutAutoCall:
+class OptionUpOutAutoCall(Option):
     """OptionUpOutAutoCall
 
     Up and out auto call option.
@@ -60,7 +61,9 @@ class OptionUpOutAutoCall:
         days_gap = (date_next_trade_day - date_today).days
         return paid_at_next_trade_day / (1 + days_gap * rf_daily)
 
-    def continuation_value(self, t: float, S: float, Smax: float, rf: float) -> float:
+    def continuation_value(
+        self, t: float, S: float, S0: float, Smax: float, rf: float
+    ) -> float:
         """Give continuation value at node if it can be inferred from `t` and `S`
 
         Args:

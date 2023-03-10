@@ -1,7 +1,8 @@
 from snow_ball.date_util import DateUtil
+from snow_ball.option.option import Option
 
 
-class OptionUpOutDownOutMinimal:
+class OptionUpOutDownOutMinimal(Option):
     """OptionUpOutDownOutMinimal
 
     Up out and Down out option with an exotic payoff function.
@@ -74,7 +75,7 @@ class OptionUpOutDownOutMinimal:
         return 0
 
     def continuation_value(
-        self, t: float, S: float, Smax: float, rf: float, S0: float
+        self, t: float, S: float, S0: float, Smax: float, rf: float
     ) -> float:
         """Give continuation value at node if it can be inferred from `t` and `S`
 

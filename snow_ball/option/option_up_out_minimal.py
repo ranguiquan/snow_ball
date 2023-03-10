@@ -1,7 +1,8 @@
 from snow_ball.date_util import DateUtil
+from snow_ball.option.option import Option
 
 
-class OptionUpOutMinimal:
+class OptionUpOutMinimal(Option):
     """OptionUpOutMinimal
 
     Up and out option with an exotic payoff function.
@@ -13,7 +14,6 @@ class OptionUpOutMinimal:
         R: float,
         date_util: DateUtil,
         up_barrier: float,
-        Smax: float,
     ) -> None:
         self.R = R
         self.date_util = date_util

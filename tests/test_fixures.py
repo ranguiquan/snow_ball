@@ -41,7 +41,7 @@ def set_option_up_out_down_out(set_date_util):
 @pytest.fixture
 def set_option_up_out_minimal(set_date_util):
     """default OptionUpOutMinimal Object"""
-    return OptionUpOutMinimal(R, set_date_util, up_barrier, Smax)
+    return OptionUpOutMinimal(R, set_date_util, up_barrier)
 
 
 @pytest.fixture
