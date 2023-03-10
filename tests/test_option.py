@@ -5,6 +5,7 @@ from tests.test_fixures import (
     set_date_util,
     set_option_up_out_auto_call,
     set_option_up_out_down_out,
+    set_option_up_out_down_out_minimal,
     set_option_up_out_minimal,
     Smax,
     Smin,
@@ -13,6 +14,7 @@ from tests.test_fixures import (
 from snow_ball.option.option_up_out_auto_call import OptionUpOutAutoCall
 from snow_ball.option.option_up_out_down_out import OptionUpOutDownOut
 from snow_ball.option.option_up_out_minimal import OptionUpOutMinimal
+from snow_ball.option.option_up_out_down_out_minimal import OptionUpOutDownOutMinimal
 
 
 class TestOptionUpOutAutoCall:
@@ -93,7 +95,8 @@ class TestOptionUpOutMinimal:
         # end boundary
         assert set_option_up_out_minimal.continuation_value(240, S0) <= 1
         assert set_option_up_out_minimal.continuation_value(240, S0 * 0.5) <= 0.5
-        assert set_option_up_out_minimal.continuation_value(240, S0 * 2) <= 1
+        assert set_option_up_out_minimal.continuation_value(240, S0 * 1.03) <= 1
+        assert set_option_up_out_minimal.continuation_value(240, S0 * 1.03) > 0.9
         assert set_option_up_out_minimal.continuation_value(240, 0) == 0
 
         # upper boundary
@@ -111,3 +114,40 @@ class TestOptionUpOutMinimal:
         assert set_option_up_out_minimal.continuation_value(213, 2 * S0) == -1
         assert set_option_up_out_minimal.continuation_value(215, 0.5 * S0) == -1
         assert set_option_up_out_minimal.continuation_value(213, 0.5 * S0) == -1
+
+
+class TestOptionUpOutDownOutMinimal:
+    def test_continuation_value(
+        self, set_option_up_out_down_out_minimal: OptionUpOutDownOutMinimal
+    ):
+        # end boundary
+        assert set_option_up_out_down_out_minimal.continuation_value(240, S0) <= 1
+        assert (
+            set_option_up_out_down_out_minimal.continuation_value(240, S0 * 0.5) <= 0.5
+        )
+        assert (
+            set_option_up_out_down_out_minimal.continuation_value(240, S0 * 1.03) <= 1
+        )
+        assert (
+            set_option_up_out_down_out_minimal.continuation_value(240, S0 * 1.03) > 0.9
+        )
+        assert set_option_up_out_down_out_minimal.continuation_value(240, S0 * 0) == 0
+
+        # upper boundary
+        assert set_option_up_out_down_out_minimal.continuation_value(0, Smax) == 0
+        assert set_option_up_out_down_out_minimal.continuation_value(100, Smax) == 0
+        assert set_option_up_out_down_out_minimal.continuation_value(200, Smax) == 0
+
+        # lower boundary
+        assert set_option_up_out_down_out_minimal.continuation_value(0, Smin) == 0
+        assert set_option_up_out_down_out_minimal.continuation_value(100, Smin) == 0
+        assert set_option_up_out_down_out_minimal.continuation_value(200, Smin) == 0
+
+        # continuation
+
+        assert (
+            set_option_up_out_down_out_minimal.continuation_value(215, up_barrier) == 0
+        )
+        assert set_option_up_out_down_out_minimal.continuation_value(213, 2 * S0) == -1
+        assert set_option_up_out_down_out_minimal.continuation_value(215, 0.5 * S0) == 0
+        assert set_option_up_out_down_out_minimal.continuation_value(213, 0.5 * S0) == 0

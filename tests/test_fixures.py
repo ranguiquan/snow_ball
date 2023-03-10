@@ -5,6 +5,7 @@ from snow_ball.date_util import DateUtil, OptionDateCollection
 from snow_ball.option.option_up_out_down_out import OptionUpOutDownOut
 from snow_ball.option.option_up_out_auto_call import OptionUpOutAutoCall
 from snow_ball.option.option_up_out_minimal import OptionUpOutMinimal
+from snow_ball.option.option_up_out_down_out_minimal import OptionUpOutDownOutMinimal
 
 S0 = 5.1
 up_barrier = S0 * 1.05
@@ -41,3 +42,11 @@ def set_option_up_out_down_out(set_date_util):
 def set_option_up_out_minimal(set_date_util):
     """default OptionUpOutMinimal Object"""
     return OptionUpOutMinimal(R, S0, set_date_util, rf, up_barrier, Smax)
+
+
+@pytest.fixture
+def set_option_up_out_down_out_minimal(set_date_util):
+    """default OptionUpOutDownOutMinimal Object"""
+    return OptionUpOutDownOutMinimal(
+        R, S0, set_date_util, rf, up_barrier, down_barrier, Smax
+    )
