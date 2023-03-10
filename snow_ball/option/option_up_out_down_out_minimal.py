@@ -11,23 +11,16 @@ class OptionUpOutDownOutMinimal:
     def __init__(
         self,
         R: float,
-        S0: float,
         date_util: DateUtil,
-        rf: float,
         up_barrier: float,
         down_barrier: float,
-        Smax: float,
     ) -> None:
         self.R = R
-        self.S0 = S0
         self.date_util = date_util
-        self.rf = rf
-        self.rf_daily = rf / 365
         self.up_barrier = up_barrier
         self.down_barrier = down_barrier
-        self.Smax = Smax
 
-    def payoff(self, S: float) -> float:
+    def payoff(self, S: float, S0: float) -> float:
         """Get payoff with S at expiry
 
         Args:
@@ -36,7 +29,7 @@ class OptionUpOutDownOutMinimal:
         Returns:
             float: payment. it happens at next trading date
         """
-        return min(S / self.S0, 1)
+        return min(S / S0, 1)
 
     def up_out_value(self, t: float):
         """Get option value at time t if surely knock out at now or future
@@ -80,7 +73,9 @@ class OptionUpOutDownOutMinimal:
         # out and pay 0
         return 0
 
-    def continuation_value(self, t: float, S: float) -> float:
+    def continuation_value(
+        self, t: float, S: float, Smax: float, rf: float, S0: float
+    ) -> float:
         """Give continuation value at node if it can be inferred from `t` and `S`
 
         Args:
@@ -91,6 +86,7 @@ class OptionUpOutDownOutMinimal:
             float: -1 means no continuation value, use FDE value instead. Otherwise use the continuation value
         """
         date_util = self.date_util
+        rf_daily = rf / 365
         if t == date_util.option_time_collection.end_time:
             # end boundary
             if S >= self.up_barrier:
@@ -101,12 +97,12 @@ class OptionUpOutDownOutMinimal:
                 - date_util.option_date_collection.end_date
             )
             days_gap = days_gap.days
-            return self.payoff(S) / (1 + days_gap * self.rf_daily)
+            return self.payoff(S, S0) / (1 + days_gap * rf_daily)
         if S == 0:
             # lower boundary
             # surely knock out ont the next monitoring date
             return self.down_out_value(t)
-        if S == self.Smax:
+        if S == Smax:
             # upper boundary
             # surely knock out ont the next monitoring date
             return self.up_out_value(t)

@@ -10,15 +10,10 @@ class OptionUpOutAutoCall:
     When touching the up barrier, the option gives coupon rate according to survival time.
     """
 
-    def __init__(
-        self, R: float, date_util: DateUtil, rf: float, up_barrier: float, Smax: float
-    ) -> None:
+    def __init__(self, R: float, date_util: DateUtil, up_barrier: float) -> None:
         self.R = R
         self.date_util = date_util
-        self.rf = rf
-        self.rf_daily = rf / 365
         self.up_barrier = up_barrier
-        self.Smax = Smax
 
     def payoff(self, t: float) -> float:
         """Get payoff at time t if surely knock out now.
@@ -40,7 +35,7 @@ class OptionUpOutAutoCall:
         tout = self.date_util.get_tout_from_t(t)
         return 1 + self.R * (tout / 365)
 
-    def up_out_value(self, t: float):
+    def up_out_value(self, t: float, rf: float):
         """Get option value at time t if surely knock out at now or future
 
         Args:
@@ -50,6 +45,7 @@ class OptionUpOutAutoCall:
             _type_: option value at time t
         """
         date_today = self.date_util.get_date_from_t(t)
+        rf_daily = rf / 365
         knock_out_time = -1
         while t <= self.date_util.option_time_collection.end_time:
             if self.date_util.is_time_t_up_out_monitoring(t):
@@ -62,9 +58,9 @@ class OptionUpOutAutoCall:
         paid_at_next_trade_day = self.payoff(knock_out_time)
         date_next_trade_day = self.date_util.get_date_from_t(knock_out_time + 1)
         days_gap = (date_next_trade_day - date_today).days
-        return paid_at_next_trade_day / (1 + days_gap * self.rf_daily)
+        return paid_at_next_trade_day / (1 + days_gap * rf_daily)
 
-    def continuation_value(self, t: float, S: float) -> float:
+    def continuation_value(self, t: float, S: float, Smax: float, rf: float) -> float:
         """Give continuation value at node if it can be inferred from `t` and `S`
 
         Args:
@@ -78,18 +74,18 @@ class OptionUpOutAutoCall:
         if t == date_util.option_time_collection.end_time:
             # end boundary
             if S >= self.up_barrier:
-                return self.up_out_value(t)
+                return self.up_out_value(t, rf)
             return 0
         if S == 0:
             # lower boundary
             # not likely to knock out
             return 0
-        if S == self.Smax:
+        if S == Smax:
             # upper boundary
             # surely knock out ont the next monitoring date
-            return self.up_out_value(t)
+            return self.up_out_value(t, rf)
         if date_util.is_time_t_up_out_monitoring(t) and S >= self.up_barrier:
             # knock out now
-            return self.up_out_value(t)
+            return self.up_out_value(t, rf)
         # can't infer continuation value, use FDE value instead.
         return -1

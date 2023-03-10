@@ -29,24 +29,22 @@ def set_date_util():
 @pytest.fixture
 def set_option_up_out_auto_call(set_date_util):
     """default OptionUpOutAutoCall Object"""
-    return OptionUpOutAutoCall(R, set_date_util, rf, up_barrier, Smax)
+    return OptionUpOutAutoCall(R, set_date_util, up_barrier)
 
 
 @pytest.fixture
 def set_option_up_out_down_out(set_date_util):
     """default OptionUpOutDownOut Object"""
-    return OptionUpOutDownOut(R, set_date_util, rf, up_barrier, down_barrier, Smax)
+    return OptionUpOutDownOut(R, set_date_util, up_barrier, down_barrier)
 
 
 @pytest.fixture
 def set_option_up_out_minimal(set_date_util):
     """default OptionUpOutMinimal Object"""
-    return OptionUpOutMinimal(R, S0, set_date_util, rf, up_barrier, Smax)
+    return OptionUpOutMinimal(R, set_date_util, up_barrier, Smax)
 
 
 @pytest.fixture
 def set_option_up_out_down_out_minimal(set_date_util):
     """default OptionUpOutDownOutMinimal Object"""
-    return OptionUpOutDownOutMinimal(
-        R, S0, set_date_util, rf, up_barrier, down_barrier, Smax
-    )
+    return OptionUpOutDownOutMinimal(R, set_date_util, up_barrier, down_barrier)
