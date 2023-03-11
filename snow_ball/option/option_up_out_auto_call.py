@@ -2,6 +2,7 @@
 """
 from snow_ball.date_util import DateUtil
 from snow_ball.option.option import Option
+import math
 
 
 class OptionUpOutAutoCall(Option):
@@ -46,7 +47,7 @@ class OptionUpOutAutoCall(Option):
             _type_: option value at time t
         """
         date_today = self.date_util.get_date_from_t(t)
-        rf_daily = rf / 365
+        rf_daily = math.pow(1 + rf, 1 / 365) - 1
         knock_out_time = -1
         while t <= self.date_util.option_time_collection.end_time:
             if self.date_util.is_time_t_up_out_monitoring(t):
@@ -59,7 +60,7 @@ class OptionUpOutAutoCall(Option):
         paid_at_next_trade_day = self.payoff(knock_out_time)
         date_next_trade_day = self.date_util.get_date_from_t(knock_out_time + 1)
         days_gap = (date_next_trade_day - date_today).days
-        return paid_at_next_trade_day / (1 + days_gap * rf_daily)
+        return paid_at_next_trade_day / (1 + rf_daily) ** days_gap
 
     def continuation_value(
         self, t: float, S: float, S0: float, Smax: float, rf: float
@@ -74,6 +75,7 @@ class OptionUpOutAutoCall(Option):
             float: -1 means no continuation value, use FDE value instead. Otherwise use the continuation value
         """
         date_util = self.date_util
+        t = math.ceil(t)
         if t == date_util.option_time_collection.end_time:
             # end boundary
             if S >= self.up_barrier:

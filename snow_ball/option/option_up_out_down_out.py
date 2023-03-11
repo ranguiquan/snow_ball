@@ -1,5 +1,6 @@
 from snow_ball.date_util import DateUtil
 from snow_ball.option.option import Option
+import math
 
 
 class OptionUpOutDownOut(Option):
@@ -45,14 +46,15 @@ class OptionUpOutDownOut(Option):
         self, t: float, S: float, S0: float, Smax: float, rf: float
     ) -> float:
         date_util = self.date_util
-        rf_daily = rf / 365
+        rf_daily = math.pow(1 + rf, 1 / 365) - 1
+        t = math.ceil(t)
         pay = 1 + self.R * 357 / 365
         days_gap = (
             date_util.option_date_collection.after_end_date
             - date_util.option_date_collection.end_date
         )
         days_gap = days_gap.days
-        never_out_value = pay / (1 + days_gap * rf_daily)
+        never_out_value = pay / (1 + rf_daily) ** days_gap
         if t == date_util.option_time_collection.end_time:
             # end boundary
             if S >= self.up_barrier:

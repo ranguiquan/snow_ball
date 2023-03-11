@@ -16,9 +16,9 @@ R = 0.28
 rf = 0.035
 Smax = S0 * 3
 Smin = 0
-Nt = 240
+Nt = 500
 Ns = 500
-sigma = 0.02
+sigma = 0.3
 
 
 @pytest.fixture

@@ -1,5 +1,6 @@
 from snow_ball.date_util import DateUtil
 from snow_ball.option.option import Option
+import math
 
 
 class OptionUpOutMinimal(Option):
@@ -63,7 +64,8 @@ class OptionUpOutMinimal(Option):
         Returns:
             float: -1 means no continuation value, use FDE value instead. Otherwise use the continuation value
         """
-        rf_daily = rf / 365
+        rf_daily = math.pow(1 + rf, 1 / 365) - 1
+        t = math.ceil(t)
         date_util = self.date_util
         if t == date_util.option_time_collection.end_time:
             # end boundary
@@ -75,7 +77,7 @@ class OptionUpOutMinimal(Option):
                 - date_util.option_date_collection.end_date
             )
             days_gap = days_gap.days
-            return self.payoff(S, S0) / (1 + days_gap * rf_daily)
+            return self.payoff(S, S0) / (1 + rf_daily) ** days_gap
         if S == 0:
             # lower boundary
             # option never knock out, but worthless

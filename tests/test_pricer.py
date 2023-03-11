@@ -29,19 +29,25 @@ class TestSnowBallPricer:
         # np.savetxt('OptionUpOutDownOutMinimal.csv', set_pricer.price_option_fdm_cn_bs(set_option_up_out_down_out_minimal), delimiter=",")
         # np.savetxt('OptionUpOutDownOut.csv', set_pricer.price_option_fdm_cn_bs(set_option_up_out_down_out), delimiter=",")
         # np.savetxt('OptionUpOutMinimal.csv', set_pricer.price_option_fdm_cn_bs(set_option_up_out_minimal), delimiter=",")
-        # price_OptionUpOutAutoCall = set_pricer.price_option_fdm_cn_bs(
-        #     set_option_up_out_auto_call
-        # )
-        # price_OptionUpOutDownOutMinimal = set_pricer.price_option_fdm_cn_bs(
-        #     set_option_up_out_down_out_minimal
-        # )
-        # price_OptionUpOutDownOut = set_pricer.price_option_fdm_cn_bs(
-        #     set_option_up_out_down_out
-        # )
-        # price_OptionUpOutMinimal = set_pricer.price_option_fdm_cn_bs(
-        #     set_option_up_out_minimal
-        # )
-        # # assert price_OptionUpOutAutoCall + price_OptionUpOutDownOut + price_OptionUpOutMinimal - price_OptionUpOutDownOutMinimal == 1
+        price_OptionUpOutAutoCall = set_pricer.price_option_fdm_cn_bs(
+            set_option_up_out_auto_call
+        )
+        price_OptionUpOutDownOutMinimal = set_pricer.price_option_fdm_cn_bs(
+            set_option_up_out_down_out_minimal
+        )
+        price_OptionUpOutDownOut = set_pricer.price_option_fdm_cn_bs(
+            set_option_up_out_down_out
+        )
+        price_OptionUpOutMinimal = set_pricer.price_option_fdm_cn_bs(
+            set_option_up_out_minimal
+        )
+        assert (
+            price_OptionUpOutAutoCall
+            + price_OptionUpOutDownOut
+            + price_OptionUpOutMinimal
+            - price_OptionUpOutDownOutMinimal
+            >= 1
+        )
         # assert (
         #     float(
         #         price_OptionUpOutAutoCall
@@ -51,4 +57,3 @@ class TestSnowBallPricer:
         #     )
         #     == 1
         # )
-        pass
