@@ -21,8 +21,26 @@ class SnowBallPricer:
         self.Nt = Nt
         self.Ns = Ns
         self.sigma = sigma
+        self.grid_option_up_out_auto_call = self._get_price_grid_option_fdm_cn(
+            snow_ball.up_out_auto_call
+        )
+        self.grid_option_up_down_out = self._get_price_grid_option_fdm_cn(
+            snow_ball.up_out_down_out
+        )
+        self.grid_option_up_out_minimal = self._get_price_grid_option_fdm_cn(
+            snow_ball.up_out_minimal
+        )
+        self.grid_option_up_out_down_out_minimal = self._get_price_grid_option_fdm_cn(
+            snow_ball.up_out_down_out_minimal
+        )
+        self.grid_option_snow_ball = (
+            self.grid_option_up_out_auto_call
+            + self.grid_option_up_down_out
+            + self.grid_option_up_out_minimal
+            + self.grid_option_up_out_down_out_minimal
+        )
 
-    def price_option_fdm_cn_bs(self, option: Option):
+    def _get_price_grid_option_fdm_cn(self, option: Option):
         Nt = self.Nt
         Ns = self.Ns
         S_max = self.Smax
@@ -82,23 +100,12 @@ class SnowBallPricer:
 
         # Compute solution
         for i in range(Nt - 1, -1, -1):
-            # print(f"time: {i * 240 * dt}")
             F = np.zeros(Ns - 1)
             F[0] = -alpha[0] * grid[i + 1][0] - alpha[0] * grid[i][0]
             F[Ns - 2] = (-gamma[Ns - 2] * grid[i + 1][Ns]) - (
                 gamma[Ns - 2] * grid[i][Ns]
             )
             b = np.matmul(B, grid[i + 1][1:Ns]) + F
-            # for j in range(Ns - 1):
-            #     b[j] = (
-            #         alpha[j] * grid[i + 1][j - 1]
-            #         + (beta[j] + 1) * grid[i + 1][j]
-            #         + gamma[j] * grid[i + 1][j + 1]
-            #     )
-            # Boundary conditions
-            # b[0] = 0
-            # b[Ns] = S_max - K * np.exp(-r * ((Nt - i) * dt))
-
             grid[i][1:Ns] = np.linalg.solve(A, b)
             for j in range(1, Ns):
                 continuation = option.continuation_value(
@@ -106,6 +113,45 @@ class SnowBallPricer:
                 )
                 grid[i][j] = continuation if continuation != -1 else grid[i][j]
 
-        # Return option price at t=0, S=S0
+        # Return option price grid
+        return grid
+
+    def get_price_from_grid(self, grid: np.array) -> float:
+        S0 = self.S0
+        Smax = self.Smax
+        Ns = self.Ns
+        ds = Smax / Ns
         return grid[0, int(S0 / ds)]
-        # return grid
+
+    def get_snow_ball_price(self) -> list[float, dict[str, float]]:
+        grid_option_list = [
+            self.grid_option_up_out_auto_call,
+            self.grid_option_up_down_out,
+            self.grid_option_up_out_minimal,
+            self.grid_option_up_out_down_out_minimal,
+        ]
+        price_option_list = [
+            self.get_price_from_grid(grid) for grid in grid_option_list
+        ]
+        return (
+            price_option_list[0]
+            + price_option_list[1]
+            + price_option_list[2]
+            - price_option_list[3],
+            price_option_list,
+        )
+
+    def get_delta(self, S: float, t: float) -> float:
+        Smax = self.Smax
+        Ns = self.Ns
+        ds = Smax / Ns
+        T = self.snow_ball.date_util.option_time_collection.end_time
+        Nt = self.Nt
+        dt = T / Nt
+
+        index_s = int(S / ds)
+        index_t = int(t / dt)
+        return (
+            self.grid_option_snow_ball[index_t][index_s + 1]
+            - self.grid_option_snow_ball[index_t][index_s - 1]
+        ) / (2 * ds)

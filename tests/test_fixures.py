@@ -13,12 +13,12 @@ S0 = 5.1
 up_barrier = S0 * 1.05
 down_barrier = S0 * 0.68
 R = 0.28
-rf = 0.035
+rf = 0.04
 Smax = S0 * 3
 Smin = 0
 Nt = 500
 Ns = 500
-sigma = 0.3
+sigma = 0.5
 
 
 @pytest.fixture
