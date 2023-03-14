@@ -8,6 +8,7 @@ class SnowBallPricer:
         self,
         snow_ball: OptionSnowBall,
         rf: float,
+        q: float,
         Smax: float,
         S0: float,
         Nt: int,
@@ -16,6 +17,7 @@ class SnowBallPricer:
     ):
         self.snow_ball = snow_ball
         self.rf = rf
+        self.q = q
         self.Smax = Smax
         self.S0 = S0
         self.Nt = Nt
@@ -45,7 +47,7 @@ class SnowBallPricer:
         Nt = self.Nt
         Ns = self.Ns
         S_max = self.Smax
-        r = self.rf
+        r = self.rf - self.q
         S0 = self.S0
         sigma = self.sigma
         T = self.snow_ball.date_util.option_time_collection.end_time

@@ -14,6 +14,7 @@ up_barrier = S0 * 1.05
 down_barrier = S0 * 0.68
 R = 0.28
 rf = 0.04
+q = 0.01
 Smax = S0 * 3
 Smin = 0
 Nt = 500
@@ -62,4 +63,4 @@ def set_snow_ball(set_date_util):
 
 @pytest.fixture
 def set_pricer(set_snow_ball):
-    return SnowBallPricer(set_snow_ball, rf, Smax, S0, Nt, Ns, sigma)
+    return SnowBallPricer(set_snow_ball, rf, q, Smax, S0, Nt, Ns, sigma)
