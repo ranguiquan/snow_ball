@@ -3,6 +3,7 @@ from snow_ball.date_util import DateUtil
 from snow_ball.option.option_up_out_down_out import OptionUpOutDownOut
 from snow_ball.option.option_up_out_down_out_minimal import OptionUpOutDownOutMinimal
 from snow_ball.option.option_up_out_minimal import OptionUpOutMinimal
+from snow_ball.option.option_minimal import OptionMinimal
 
 
 class OptionSnowBall:
@@ -18,3 +19,4 @@ class OptionSnowBall:
             R, date_util, up_barrier, down_barrier
         )
         self.up_out_minimal = OptionUpOutMinimal(R, date_util, up_barrier)
+        self.minimal = OptionMinimal(R, date_util)

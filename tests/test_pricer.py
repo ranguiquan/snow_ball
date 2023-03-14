@@ -23,5 +23,5 @@ class TestSnowBallPricer:
     ):
         assert set_pricer.get_snow_ball_price()[0] <= 1
 
-    def test_get_delta(self, set_pricer: SnowBallPricer):
-        assert set_pricer.get_delta(1.02, 5) <= 1
+    def test_get_snow_ball_delta(self, set_pricer: SnowBallPricer):
+        assert set_pricer.get_snow_ball_delta(1.02, 5) <= 1

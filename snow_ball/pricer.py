@@ -33,6 +33,7 @@ class SnowBallPricer:
         self.grid_option_up_out_down_out_minimal = self._get_price_grid_option_fdm_cn(
             snow_ball.up_out_down_out_minimal
         )
+        self.grid_option_minimal = self._get_price_grid_option_fdm_cn(snow_ball.minimal)
         self.grid_option_snow_ball = (
             self.grid_option_up_out_auto_call
             + self.grid_option_up_down_out
@@ -116,12 +117,15 @@ class SnowBallPricer:
         # Return option price grid
         return grid
 
-    def get_price_from_grid(self, grid: np.array) -> float:
-        S0 = self.S0
+    def get_price_from_grid(self, grid: np.array, S: float, t: float) -> float:
         Smax = self.Smax
         Ns = self.Ns
         ds = Smax / Ns
-        return grid[0, int(S0 / ds)]
+        T = self.snow_ball.date_util.option_time_collection.end_time
+        Nt = self.Nt
+        dt = T / Nt
+
+        return grid[int(t / dt), int(S / ds)]
 
     def get_snow_ball_price(self) -> list[float, dict[str, float]]:
         grid_option_list = [
@@ -131,7 +135,7 @@ class SnowBallPricer:
             self.grid_option_up_out_down_out_minimal,
         ]
         price_option_list = [
-            self.get_price_from_grid(grid) for grid in grid_option_list
+            self.get_price_from_grid(grid, self.S0, 0) for grid in grid_option_list
         ]
         return (
             price_option_list[0]
@@ -141,7 +145,7 @@ class SnowBallPricer:
             price_option_list,
         )
 
-    def get_delta(self, S: float, t: float) -> float:
+    def get_snow_ball_delta(self, S: float, t: float) -> float:
         Smax = self.Smax
         Ns = self.Ns
         ds = Smax / Ns
@@ -154,4 +158,19 @@ class SnowBallPricer:
         return (
             self.grid_option_snow_ball[index_t][index_s + 1]
             - self.grid_option_snow_ball[index_t][index_s - 1]
+        ) / (2 * ds)
+
+    def get_option_minimal_delta(self, S: float, t: float) -> float:
+        Smax = self.Smax
+        Ns = self.Ns
+        ds = Smax / Ns
+        T = self.snow_ball.date_util.option_time_collection.end_time
+        Nt = self.Nt
+        dt = T / Nt
+
+        index_s = int(S / ds)
+        index_t = int(t / dt)
+        return (
+            self.grid_option_minimal[index_t][index_s + 1]
+            - self.grid_option_minimal[index_t][index_s - 1]
         ) / (2 * ds)
