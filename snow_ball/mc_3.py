@@ -109,7 +109,7 @@ def snowball_cashflow(price_path, R, I, N, S0, rf):
             payoff[i] = N * (1 + R * (tout / 365))
             payoff_present_value[i] = N * (1 + R * (tout / 365)) / (1 + rf / 365 * tout)
             knock_out_times += 1
-            pricebs[i]=payoff[i]/((1+r/365)**tout) 
+            pricebs[i]=payoff[i]/((1+rf/365)**tout) 
             #returns[i]=((payoff[i]-pricebs)/price[i])
             Tout[i]=tout
 
@@ -118,7 +118,7 @@ def snowball_cashflow(price_path, R, I, N, S0, rf):
             payoff[i] = N * (1 + R * 357 / 365)
             payoff_present_value[i] = N * (1 + R * (357 / 365)) / (1 + rf / 365 * 357)
             existence_times += 1
-            pricebs[i]=payoff[i]/((1+r/365)**tout) 
+            pricebs[i]=payoff[i]/((1+rf/365)**tout) 
             #returns[i]=((payoff[i]-price[i])/price[i])
             Tout[i]=tout-1
 
@@ -134,7 +134,7 @@ def snowball_cashflow(price_path, R, I, N, S0, rf):
             )
 
             knock_in_times += 1
-            pricebs[i]=payoff[i]/((1+r/365)**tout) 
+            pricebs[i]=payoff[i]/((1+rf/365)**tout) 
             #returns[i]=((payoff[i]-price[i])/price[i])
             Tout[i]=tout-1
 
