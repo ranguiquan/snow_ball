@@ -8,7 +8,13 @@ from snow_ball.pricer import SnowBallPricer
 
 
 def simulation(
-    S0: float, rf: float, sigma: float, path_count: int, is_plot_path: int, T: int = 240
+    S0: float,
+    rf: float,
+    q: float,
+    sigma: float,
+    path_count: int,
+    is_plot_path: int,
+    T: int = 240,
 ) -> np.array:
     """generate underlying price paths
 
@@ -34,7 +40,7 @@ def simulation(
     for t in range(1, T + 1):
         z = np.random.standard_normal(path_count)
         middle1 = Spath[t - 1, 0:path_count] * np.exp(
-            (rf - 0.5 * sigma**2) * delta_t + sigma * np.sqrt(delta_t) * z
+            (rf - q - 0.5 * sigma**2) * delta_t + sigma * np.sqrt(delta_t) * z
         )
         uplimit = Spath[t - 1] * 1.1
         lowlimit = Spath[t - 1] * 0.9
@@ -58,7 +64,7 @@ def simulation(
     # return m, Spath
 
 
-def snowball_cashflow(price_path, R, I, N, S0):
+def snowball_cashflow(price_path, R, I, N, S0, rf):
     T0 = datetime.datetime(2019, 1, 3)
     T_start = datetime.datetime(2019, 1, 4)
     T_right = datetime.datetime(2020, 1, 2)
@@ -67,6 +73,7 @@ def snowball_cashflow(price_path, R, I, N, S0):
     Tout = []
 
     payoff = np.zeros(I)
+    payoff_present_value = np.zeros(I)
     knock_out_times = 0
     knock_in_times = 0
     existence_times = 0
@@ -98,24 +105,39 @@ def snowball_cashflow(price_path, R, I, N, S0):
             tout = date_util.get_tout_from_t(up_out_dates[0])
             # print(tout)
             payoff[i] = N * (1 + R * (tout / 365))
+            payoff_present_value[i] = N * (1 + R * (tout / 365)) / (1 + rf / 365 * tout)
             knock_out_times += 1
             Tout.append(tout)
 
         # 情景2：未敲出且未敲入
         elif up_out_flag == False and down_in_flag == False:
             payoff[i] = N * (1 + R * 357 / 365)
+            payoff_present_value[i] = N * (1 + R * (357 / 365)) / (1 + rf / 365 * 357)
             existence_times += 1
 
         # 情景3：只发生向下敲入，不发生向上敲出
         elif down_in_flag and up_out_flag == False:
             # 只有向下敲入，没有向上敲出
             payoff[i] = N * min(price_path[len(price_path) - 1][i] / S0, 1)
+            payoff_present_value[i] = (
+                N
+                * min(price_path[len(price_path) - 1][i] / S0, 1)
+                / (1 + rf / 365 * 357)
+            )
+
             knock_in_times += 1
         else:
             # print(i)
             pass
     # print(knock_in_times)
-    return payoff, knock_out_times, knock_in_times, existence_times, Tout
+    return (
+        payoff,
+        payoff_present_value,
+        knock_out_times,
+        knock_in_times,
+        existence_times,
+        Tout,
+    )
 
 
 def delta_hedging_portfolio(price_path: np.array, pricer: SnowBallPricer) -> np.array:
@@ -158,13 +180,11 @@ def delta_hedging_portfolio(price_path: np.array, pricer: SnowBallPricer) -> np.
 
         # state matrix
         states[:, i] = np.maximum.accumulate(states[:, i])
-        for j in range(T - 1):
+        for j in range(T):
             if states[j, i] == 0:
-                portfolio[j, i] = -pricer.get_snow_ball_delta(price_path[j, i], j + 1)
+                portfolio[j, i] = -pricer.get_snow_ball_delta(price_path[j, i], j)
             elif states[j, i] == 1:
-                portfolio[j, i] = -pricer.get_option_minimal_delta(
-                    price_path[j, i], j + 1
-                )
+                portfolio[j, i] = -pricer.get_option_minimal_delta(price_path[j, i], j)
             else:
                 break
     return portfolio
@@ -174,7 +194,8 @@ def delta_portfolio_return(portfolio: np.array, price_path: np.array):
     return_path = np.diff(price_path, axis=0)
     # return_path = np.diff(price_path, axis=0) / price_path[:-1, :]
     portfolio_return = return_path * portfolio[:-1, :]
-    return np.sum(portfolio_return, axis=0)
+    res = np.sum(portfolio_return, axis=0)
+    return res
 
 
 if __name__ == "__main__":

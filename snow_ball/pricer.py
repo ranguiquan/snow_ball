@@ -40,7 +40,7 @@ class SnowBallPricer:
             self.grid_option_up_out_auto_call
             + self.grid_option_up_down_out
             + self.grid_option_up_out_minimal
-            + self.grid_option_up_out_down_out_minimal
+            - self.grid_option_up_out_down_out_minimal
         )
 
     def _get_price_grid_option_fdm_cn(self, option: Option):
@@ -157,6 +157,11 @@ class SnowBallPricer:
 
         index_s = int(S / ds)
         index_t = int(t / dt)
+        # if index_s + 1 >= int(self.snow_ball.up_out_auto_call.up_barrier / ds):
+        #     return (self.grid_option_snow_ball[index_t][index_s-2] - self.grid_option_snow_ball[index_t][index_s-3]) / ds
+        # if index_s - 3 <= int(self.snow_ball.up_out_down_out.down_barrier / ds):
+        #     # return (self.grid_option_snow_ball[index_t][index_s + 1] - self.grid_option_minimal[index_t][index_s - 1]) / (ds * 2)
+        #     return (self.grid_option_snow_ball[index_t][index_s + 10] - self.grid_option_minimal[index_t][index_s + 9]) / ds
         return (
             self.grid_option_snow_ball[index_t][index_s + 1]
             - self.grid_option_snow_ball[index_t][index_s - 1]
@@ -173,6 +178,14 @@ class SnowBallPricer:
         index_s = int(S / ds)
         index_t = int(t / dt)
         return (
-            self.grid_option_minimal[index_t][index_s + 1]
-            - self.grid_option_minimal[index_t][index_s - 1]
+            self.grid_option_up_down_out[index_t][index_s + 1]
+            + self.grid_option_up_out_minimal[index_t][index_s + 1]
+            - self.grid_option_up_out_down_out_minimal[index_t][index_s + 1]
+            - self.grid_option_up_down_out[index_t][index_s - 1]
+            - self.grid_option_up_out_minimal[index_t][index_s - 1]
+            + self.grid_option_up_out_down_out_minimal[index_t][index_s - 1]
         ) / (2 * ds)
+        # return (
+        #     self.grid_option_snow_ball[index_t][index_s + 1]
+        #     - self.grid_option_snow_ball[index_t][index_s - 1]
+        # ) / 2
