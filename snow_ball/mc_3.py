@@ -1,11 +1,9 @@
 import math
 from numpy.random import random
 import numpy as np
-from snow_ball.date_util import DateUtil, OptionDateCollection
+from date_util import DateUtil,OptionDateCollection
 import datetime
 import matplotlib.pyplot as plt
-from snow_ball.pricer import SnowBallPricer
-
 
 def simulation(
     S0: float,
@@ -13,7 +11,7 @@ def simulation(
     q: float,
     sigma: float,
     path_count: int,
-    is_plot_path: int,
+    is_plot_path: bool,
     T: int = 240,
 ) -> np.array:
     """generate underlying price paths
@@ -36,7 +34,7 @@ def simulation(
     delta_t = T_model / T
     Spath = np.zeros((T + 1, path_count))
     Spath[0] = S0
-    # m = []
+    m=[]
     for t in range(1, T + 1):
         z = np.random.standard_normal(path_count)
         middle1 = Spath[t - 1, 0:path_count] * np.exp(
@@ -46,22 +44,24 @@ def simulation(
         lowlimit = Spath[t - 1] * 0.9
         temp = np.where(uplimit < middle1, uplimit, middle1)
         temp = np.where(lowlimit > middle1, lowlimit, temp)
-        Spath[t, 0:path_count] = temp
-        # m.append(max(Spath[t, 0:I]))
+        Spath[t, 0:I] = temp
+        m.append(max(Spath[t, 0:I]))
 
     if is_plot_path:
         plt.plot(Spath[:, :])
-        plt.plot([0.68 * S0] * len(Spath), color="black")
-
-        plt.xlabel("time")
-        plt.ylabel("price")
-        plt.title("price Simulation")
+        plt.plot([0.68*S0]*len(Spath),color='black')
+        
+        plt.xlabel('time')
+        plt.ylabel('price')
+        plt.title('Stock Price Simulation')
         plt.grid(True)
         plt.show()
         plt.close()
+        
 
-    return Spath
-    # return m, Spath
+
+    return m,Spath
+
 
 
 def snowball_cashflow(price_path, R, I, N, S0, rf):
@@ -69,8 +69,10 @@ def snowball_cashflow(price_path, R, I, N, S0, rf):
     T_start = datetime.datetime(2019, 1, 4)
     T_right = datetime.datetime(2020, 1, 2)
     Tn = datetime.datetime(2019, 12, 27)
-    date_util = DateUtil(OptionDateCollection(T0, T_start, Tn, T_right))
-    Tout = []
+    date_util=DateUtil(OptionDateCollection(T0, T_start, Tn, T_right))
+    Tout=np.zeros(I)
+    pricebs=np.zeros(I)
+    #returns=np.zeros(I)
 
     payoff = np.zeros(I)
     payoff_present_value = np.zeros(I)
@@ -78,6 +80,8 @@ def snowball_cashflow(price_path, R, I, N, S0, rf):
     knock_in_times = 0
     existence_times = 0
     for i in range(I):
+
+        
         # 收盘价超过敲出线的交易日
         up_out_dates = np.where(price_path[:, i] > 1.05 * S0)[0]
         up_out_dates = list(
@@ -87,8 +91,6 @@ def snowball_cashflow(price_path, R, I, N, S0, rf):
             up_out_flag = False
 
         else:
-            # tmp_up_d = np.array(list(map(date_util.get_tout_from_t,tmp_up_d)))
-            # tmp_up_m = any(list(map(date_util.is_time_t_up_out_monitoring, tmp_up_d)))
             up_out_flag = True
 
         # 收盘价低于敲入线的交易日
@@ -107,13 +109,19 @@ def snowball_cashflow(price_path, R, I, N, S0, rf):
             payoff[i] = N * (1 + R * (tout / 365))
             payoff_present_value[i] = N * (1 + R * (tout / 365)) / (1 + rf / 365 * tout)
             knock_out_times += 1
-            Tout.append(tout)
+            pricebs[i]=payoff[i]/((1+r/365)**tout) 
+            #returns[i]=((payoff[i]-pricebs)/price[i])
+            Tout[i]=tout
 
         # 情景2：未敲出且未敲入
         elif up_out_flag == False and down_in_flag == False:
             payoff[i] = N * (1 + R * 357 / 365)
             payoff_present_value[i] = N * (1 + R * (357 / 365)) / (1 + rf / 365 * 357)
             existence_times += 1
+            pricebs[i]=payoff[i]/((1+r/365)**tout) 
+            #returns[i]=((payoff[i]-price[i])/price[i])
+            Tout[i]=tout-1
+
 
         # 情景3：只发生向下敲入，不发生向上敲出
         elif down_in_flag and up_out_flag == False:
@@ -126,6 +134,10 @@ def snowball_cashflow(price_path, R, I, N, S0, rf):
             )
 
             knock_in_times += 1
+            pricebs[i]=payoff[i]/((1+r/365)**tout) 
+            #returns[i]=((payoff[i]-price[i])/price[i])
+            Tout[i]=tout-1
+
         else:
             # print(i)
             pass
@@ -140,56 +152,6 @@ def snowball_cashflow(price_path, R, I, N, S0, rf):
     )
 
 
-def delta_hedging_portfolio(price_path: np.array, pricer: SnowBallPricer) -> np.array:
-    date_util = pricer.snow_ball.date_util
-    S0 = pricer.S0
-    # state of the snow ball option
-    # 0 means original state
-    # 1 means knock in
-    # 2 means knock out
-    states = np.zeros((price_path.shape[0], price_path.shape[1]))
-    portfolio = np.zeros((price_path.shape[0], price_path.shape[1]))
-    # time length
-    T = price_path.shape[0]
-    # path_count
-    path_count = price_path.shape[1]
-
-    for i in range(path_count):
-        # 收盘价低于敲入线的交易日
-
-        down_in_dates = np.where(price_path[:, i] < 0.68 * S0)[0]
-        states[down_in_dates, i] = 1
-        if len(down_in_dates) == 0:
-            down_in_flag = False
-        else:
-            down_in_flag = True
-
-        # 收盘价超过敲出线的交易日
-        up_out_dates = np.where(price_path[:, i] > 1.05 * S0)[0]
-        up_out_dates = list(
-            filter(lambda x: date_util.is_time_t_up_out_monitoring(x), up_out_dates)
-        )
-        states[up_out_dates, i] = 2
-        if len(up_out_dates) == 0:
-            up_out_flag = False
-
-        else:
-            # tmp_up_d = np.array(list(map(date_util.get_tout_from_t,tmp_up_d)))
-            # tmp_up_m = any(list(map(date_util.is_time_t_up_out_monitoring, tmp_up_d)))
-            up_out_flag = True
-
-        # state matrix
-        states[:, i] = np.maximum.accumulate(states[:, i])
-        for j in range(T):
-            if states[j, i] == 0:
-                portfolio[j, i] = -pricer.get_snow_ball_delta(price_path[j, i], j)
-            elif states[j, i] == 1:
-                portfolio[j, i] = -pricer.get_option_minimal_delta(price_path[j, i], j)
-            else:
-                break
-    return portfolio
-
-
 def delta_portfolio_return(portfolio: np.array, price_path: np.array):
     return_path = np.diff(price_path, axis=0)
     # return_path = np.diff(price_path, axis=0) / price_path[:-1, :]
@@ -202,26 +164,41 @@ if __name__ == "__main__":
     np.random.seed(0)
     sigma = 0.5
 
-    S0 = 5.1
-    r = 0.04
-    path_count = 1000
-    T = 240
-    R = 0.28
-    N = 1
+S0 = 5.1
+r=0.045
+q=0.02875161161872558
 
-    price_path = simulation(S0, r, sigma, path_count, is_plot_path=False, T=240)
-    # print(max(m))
-    # plt.plot(price_path[:, :])
-    # plt.plot(0.68*S0*len(price_path))
-    # plt.ylim((0,max(m)+1))
-    # plt.xlabel('time')
-    # plt.ylabel('price')
-    # plt.title('price Simulation')
-    # plt.grid(True)
-    # plt.show()*
-    payoff, knock_out_times, knock_in_times, existence_times, Tout = snowball_cashflow(
-        price_path, R, path_count, N, S0
-    )
-    print(np.mean(payoff))
-    # print(Tout)
-    # b = 1
+miu = -0.224
+#miu=r-q
+I = 10000
+T=240
+R = 0.28
+N=1
+
+mbs,price_pathbs = simulation(S0, miu=r-q,  sigma=sigma, I=I, plotpath=False,T=240)
+pricebs = snowball_cashflowbs(price_pathbs, R, I,N,S0,r)
+pricebs=np.mean(pricebs)
+print(np.mean(pricebs))
+mreal,price_pathreal = simulation(S0, miu,  sigma, I, plotpath=True,T=240)
+payoffreal, Toutreal,returns= snowball_cashflowreal(price_pathreal, R, I,N,S0,r,pricebs=0.969389711022292)
+
+print(np.mean(payoffreal))
+#模拟存活时间
+print(np.mean(Toutreal))
+#真实存活时间：21， 2月1日敲出
+print(np.mean(returns))
+print(np.median(returns))
+print(np.std(returns))
+#真实收益
+T0 = datetime.datetime(2019, 1, 3)
+T_start = datetime.datetime(2019, 1, 4)
+T_right = datetime.datetime(2020, 1, 2)
+Tn = datetime.datetime(2019, 12, 27)
+date_util=DateUtil(OptionDateCollection(T0, T_start, Tn, T_right))
+ttrue= date_util.get_tout_from_t(21)
+payofftrue= N * (1+R*(ttrue/365))
+pricetrue=payofftrue/((1+r/365)**(ttrue+1)) 
+returnstrue=((payofftrue-pricetrue)/pricetrue)
+print(returnstrue)
+#print(Tout)
+
