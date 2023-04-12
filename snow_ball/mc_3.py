@@ -1,7 +1,7 @@
 import math
 from numpy.random import random
 import numpy as np
-from date_util import DateUtil,OptionDateCollection
+from .date_util import DateUtil,OptionDateCollection
 import datetime
 import matplotlib.pyplot as plt
 
@@ -160,45 +160,45 @@ def delta_portfolio_return(portfolio: np.array, price_path: np.array):
     return res
 
 
-if __name__ == "__main__":
-    np.random.seed(0)
-    sigma = 0.5
+# if __name__ == "__main__":
+#     np.random.seed(0)
+#     sigma = 0.5
 
-S0 = 5.1
-r=0.045
-q=0.02875161161872558
+# S0 = 5.1
+# r=0.045
+# q=0.02875161161872558
 
-miu = -0.224
-#miu=r-q
-I = 10000
-T=240
-R = 0.28
-N=1
+# miu = -0.224
+# #miu=r-q
+# I = 10000
+# T=240
+# R = 0.28
+# N=1
 
-mbs,price_pathbs = simulation(S0, miu=r-q,  sigma=sigma, I=I, plotpath=False,T=240)
-pricebs = snowball_cashflowbs(price_pathbs, R, I,N,S0,r)
-pricebs=np.mean(pricebs)
-print(np.mean(pricebs))
-mreal,price_pathreal = simulation(S0, miu,  sigma, I, plotpath=True,T=240)
-payoffreal, Toutreal,returns= snowball_cashflowreal(price_pathreal, R, I,N,S0,r,pricebs=0.969389711022292)
+# mbs,price_pathbs = simulation(S0, miu=r-q,  sigma=sigma, I=I, plotpath=False,T=240)
+# pricebs = snowball_cashflowbs(price_pathbs, R, I,N,S0,r)
+# pricebs=np.mean(pricebs)
+# print(np.mean(pricebs))
+# mreal,price_pathreal = simulation(S0, miu,  sigma, I, plotpath=True,T=240)
+# payoffreal, Toutreal,returns= snowball_cashflowreal(price_pathreal, R, I,N,S0,r,pricebs=0.969389711022292)
 
-print(np.mean(payoffreal))
-#模拟存活时间
-print(np.mean(Toutreal))
-#真实存活时间：21， 2月1日敲出
-print(np.mean(returns))
-print(np.median(returns))
-print(np.std(returns))
-#真实收益
-T0 = datetime.datetime(2019, 1, 3)
-T_start = datetime.datetime(2019, 1, 4)
-T_right = datetime.datetime(2020, 1, 2)
-Tn = datetime.datetime(2019, 12, 27)
-date_util=DateUtil(OptionDateCollection(T0, T_start, Tn, T_right))
-ttrue= date_util.get_tout_from_t(21)
-payofftrue= N * (1+R*(ttrue/365))
-pricetrue=payofftrue/((1+r/365)**(ttrue+1)) 
-returnstrue=((payofftrue-pricetrue)/pricetrue)
-print(returnstrue)
-#print(Tout)
+# print(np.mean(payoffreal))
+# #模拟存活时间
+# print(np.mean(Toutreal))
+# #真实存活时间：21， 2月1日敲出
+# print(np.mean(returns))
+# print(np.median(returns))
+# print(np.std(returns))
+# #真实收益
+# T0 = datetime.datetime(2019, 1, 3)
+# T_start = datetime.datetime(2019, 1, 4)
+# T_right = datetime.datetime(2020, 1, 2)
+# Tn = datetime.datetime(2019, 12, 27)
+# date_util=DateUtil(OptionDateCollection(T0, T_start, Tn, T_right))
+# ttrue= date_util.get_tout_from_t(21)
+# payofftrue= N * (1+R*(ttrue/365))
+# pricetrue=payofftrue/((1+r/365)**(ttrue+1)) 
+# returnstrue=((payofftrue-pricetrue)/pricetrue)
+# print(returnstrue)
+# #print(Tout)
 
